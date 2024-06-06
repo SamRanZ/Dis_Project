@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SAT School Results</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>SAT School Results</h1>
+    <input type="text" id="search" placeholder="Search for schools..." onkeyup="fetchSchools()">
+    <table>
+        <thead>
+            <tr>
+                <th onclick="sortTable('School Name')">School Name</th>
+                <th onclick="sortTable('Number of Test Takers')">Number of Test Takers</th>
+                <th onclick="sortTable('Critical Reading Mean')">Critical Reading Mean</th>
+                <th onclick="sortTable('Mathematics Mean')">Mathematics Mean</th>
+                <th onclick="sortTable('Writing Mean')">Writing Mean</th>
+            </tr>
+        </thead>
+        <tbody id="school-list">
+            <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        let currentSort = {
+            column: '',
+            direction: 'asc'
+        };
+
+        function fetchSchools() {
+            const query = document.getElementById('search').value;
+            const sortColumn = currentSort.column;
+            const sortDirection = currentSort.direction;
+            fetch(`/schools?search=${encodeURIComponent(query)}&sort=${encodeURIComponent(sortColumn)}&direction=${encodeURIComponent(sortDirection)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const schoolList = document.getElementById('school-list');
+                    schoolList.innerHTML = '';  // Clear existing content
+                    data.forEach(school => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${school['School Name']}</td>
+                            <td>${school['Number of Test Takers']}</td>
+                            <td>${school['Critical Reading Mean']}</td>
+                            <td>${school['Mathematics Mean']}</td>
+                            <td>${school['Writing Mean']}</td>
+                        `;
+                        schoolList.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching school data:', error));
+        }
+
+        function sortTable(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            fetchSchools();
+        }
+
+        // Fetch all schools initially
+        window.onload = fetchSchools;
+    </script>
+</body>
+</html>
